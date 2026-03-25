@@ -1,0 +1,46 @@
+# ================================================
+# REST Modül Konfigürasyonu (FastAPI'ye bağlanır)
+# ================================================
+rest {
+    connect_uri = "${API_URL}"
+
+    connect_timeout     = 4.0
+    response_timeout    = 16.0
+
+    # Authentication - şifre doğrulama
+    authenticate {
+        uri     = "${API_URL}/auth"
+        method  = "post"
+        body    = "json"
+        data    = '{"username": "%{User-Name}", "password": "%{User-Password}", "nas_ip": "%{NAS-IP-Address}"}'
+        tls     = ${..tls}
+    }
+
+    # Authorization - VLAN ve policy atama
+    authorize {
+        uri     = "${API_URL}/authorize"
+        method  = "post"
+        body    = "json"
+        data    = '{"username": "%{User-Name}", "calling_station_id": "%{Calling-Station-Id}", "nas_ip": "%{NAS-IP-Address}"}'
+        tls     = ${..tls}
+    }
+
+    # Accounting - oturum kayıtları
+    accounting {
+        uri     = "${API_URL}/accounting"
+        method  = "post"
+        body    = "json"
+        data    = '{"status_type": "%{Acct-Status-Type}", "username": "%{User-Name}", "session_id": "%{Acct-Session-Id}", "nas_ip": "%{NAS-IP-Address}", "session_time": "%{Acct-Session-Time}", "input_octets": "%{Acct-Input-Octets}", "output_octets": "%{Acct-Output-Octets}", "calling_station_id": "%{Calling-Station-Id}", "framed_ip": "%{Framed-IP-Address}"}'
+        tls     = ${..tls}
+    }
+
+    pool {
+        start       = 5
+        min         = 4
+        max         = 10
+        idle_timeout = 200
+        uses        = 0
+        lifetime    = 0
+        retry_delay = 30
+    }
+}

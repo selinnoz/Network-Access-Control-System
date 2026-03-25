@@ -1,0 +1,75 @@
+# ================================================
+# FreeRADIUS Virtual Server - Ana Sunucu
+# ================================================
+server default {
+
+    # --------------------------------------------
+    # AUTHORIZE - Kim bu kullanıcı?
+    # --------------------------------------------
+    authorize {
+        # İsteği logla
+        log
+
+        # MAC Authentication Bypass kontrolü
+        # Calling-Station-Id varsa ve User-Name MAC adresine benziyorsa MAB
+        if ("%{User-Name}" =~ /^([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}$/) {
+            update request {
+                Auth-Type := "mab"
+            }
+        }
+
+        # FastAPI'den yetkilendirme bilgisi al (VLAN ataması)
+        rest
+
+        # Kullanıcı bulunamazsa reddet
+        if (notfound) {
+            reject
+        }
+    }
+
+    # --------------------------------------------
+    # AUTHENTICATE - Şifreyi doğrula
+    # --------------------------------------------
+    authenticate {
+
+        # PAP - şifreyi FastAPI üzerinden doğrula
+        Auth-Type PAP {
+            rest
+        }
+
+        # CHAP
+        Auth-Type CHAP {
+            chap
+        }
+
+        # MAB - MAC adresi tabanlı doğrulama
+        Auth-Type mab {
+            rest
+        }
+    }
+
+    # --------------------------------------------
+    # ACCOUNTING - Oturum kayıtları
+    # --------------------------------------------
+    accounting {
+        # FastAPI'ye gönder (PostgreSQL + Redis'e yazar)
+        rest
+
+        # Başarılıysa onayla
+        ok
+    }
+
+    # --------------------------------------------
+    # POST-AUTH - Doğrulama sonrası işlemler
+    # --------------------------------------------
+    post-auth {
+        # Başarısız denemeleri logla
+        if (reject) {
+            log
+        }
+
+        Post-Auth-Type REJECT {
+            log
+        }
+    }
+}
