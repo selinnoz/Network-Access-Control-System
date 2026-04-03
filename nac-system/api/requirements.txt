@@ -1,2 +1,7 @@
-uvicorn
 fastapi
+uvicorn[standard]
+sqlalchemy
+asyncpg
+redis
+bcrypt
+pydantic
