@@ -74,8 +74,7 @@ services:
     volumes:
       - ./freeradius/clients.conf:/etc/freeradius/clients.conf
       - ./freeradius/sql.conf:/etc/freeradius/mods-available/sql
-      - ./freeradius/mods-enabled/rest:/etc/freeradius/mods-enabled/rest
-      - ./freeradius/sites-enabled/default:/etc/freeradius/sites-enabled/default
+     
     depends_on:
       postgres:
         condition: service_healthy
